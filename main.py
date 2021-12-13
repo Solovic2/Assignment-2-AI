@@ -27,19 +27,24 @@ if __name__ == '__main__':
     turn = True
     while run:
         game.print_board()
+        score = game.evaluate(game.board)
+        print(score)
+
         # Player Turn
         if turn:
             x = int(input(" place : "))
-            y = game.check_last_empty_cell(x)
+            y = game.check_last_empty_cell(game.board, x)
             if y != -1:
                 game.update_board(x, y,  -1)
             else:
                 turn = not turn
         else:
-            print('computer')
-            game.get_game_leaves(1)
+            score, next_state = game.maximize(5, game.board)
+            game.board = next_state
         turn = not turn
 
+        if game.game_over():
+            run = False
     # pygame.quit()
 
 # while run:

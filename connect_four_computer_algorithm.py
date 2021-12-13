@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 
@@ -6,6 +8,8 @@ class helper:
         self.board = np.zeros((6, 7), int)
         self.row = 6
         self.col = 7
+        self.AGENT = 1
+        self.PLAYER = -1
 
     def print_board(self):
         print(self.board)
@@ -13,6 +17,12 @@ class helper:
     # update board
     def update_board(self, x, y, player_move):
         self.board[y][x] = player_move
+
+    def game_over(self):
+        for i in range(self.col):
+            if self.board[0][i] == 0:
+                return False
+        return True
 
     # check last empty cell in column
     def check_last_empty_cell(self, state, x):
@@ -33,12 +43,262 @@ class helper:
         return successors
 
     def maximize(self,depth,state):
-        successor = self.get_game_leaves(state,1)
+        successor = self.get_game_leaves(state, self.AGENT)
         if len(successor) == 0 or depth == 0:
-            # Evaluate
-            print()
+            return self.evaluate(state), state
         else:
+            max_score = -math.inf
+            max_state = None
+
             for state in successor:
-                minimize(depth-1,state)
+                next_score, next_state = self.minimize(depth - 1, state)
+                if next_score > max_score:
+                    max_score = next_score
+                    max_state = state
 
+        return max_score, max_state
 
+    def minimize(self, depth, state):
+        successor = self.get_game_leaves(state, self.PLAYER)
+        if len(successor) == 0 or depth == 0:
+            return self.evaluate(state), state
+        else:
+            min_score = math.inf
+            min_state = None
+
+            for state in successor:
+                next_score, next_state = self.maximize(depth - 1, state)
+                if next_score < min_score:
+                    min_score = next_score
+                    min_state = state
+
+        return min_score, min_state
+
+    def evaluate(self, board):
+        score = 0
+
+        for i in range(self.row):
+            countMax = 0
+            countMin = 0
+
+            for j in range(self.col):
+
+                if board[i][j] == self.AGENT:
+                    countMax += 1
+                    countMin = 0
+                elif board[i][j] == self.PLAYER:
+                    countMin += 1
+                    countMax = 0
+                else:
+                    countMin = 0
+                    countMax = 0
+
+                if countMax == 2:
+                    score += 10
+                elif countMax == 3:
+                    score += 100
+                elif countMax >= 4:
+                    score += 10000
+
+                if countMin == 2:
+                    score -= 10
+                elif countMin == 3:
+                    score -= 100
+                elif countMin >= 4:
+                    score -= 10000
+
+        for i in range(self.col):
+            countMax = 0
+            countMin = 0
+
+            for j in range(self.row):
+
+                if board[j][i] == self.AGENT:
+                    countMax += 1
+                    countMin = 0
+                elif board[j][i] == self.PLAYER:
+                    countMin += 1
+                    countMax = 0
+                else:
+                    countMin = 0
+                    countMax = 0
+
+                if countMax == 2:
+                    score += 10
+                elif countMax == 3:
+                    score += 100
+                elif countMax >= 4:
+                    score += 10000
+
+                if countMin == 2:
+                    score -= 10
+                elif countMin == 3:
+                    score -= 100
+                elif countMin >= 4:
+                    score -= 10000
+
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        for i in range(self.col):
+            countMax = 0
+            countMin = 0
+
+            r = 0
+            c = i
+
+            while r < self.row and c < self.col:
+                if board[r][c] == self.AGENT:
+                    countMax += 1
+                    countMin = 0
+                elif board[r][c] == self.PLAYER:
+                    countMin += 1
+                    countMax = 0
+                else:
+                    countMin = 0
+                    countMax = 0
+
+                if countMax == 2:
+                    score += 10
+                elif countMax == 3:
+                    score += 100
+                elif countMax >= 4:
+                    score += 10000
+
+                if countMin == 2:
+                    score -= 10
+                elif countMin == 3:
+                    score -= 100
+                elif countMin >= 4:
+                    score -= 10000
+
+                r = r + 1
+                c = c + 1
+
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        for i in range(1, self.row):
+            countMax = 0
+            countMin = 0
+
+            r = i
+            c = 0
+
+            while r < self.row and c < self.col:
+                if board[r][c] == self.AGENT:
+                    countMax += 1
+                    countMin = 0
+                elif board[r][c] == self.PLAYER:
+                    countMin += 1
+                    countMax = 0
+                else:
+                    countMin = 0
+                    countMax = 0
+
+                if countMax == 2:
+                    score += 10
+                elif countMax == 3:
+                    score += 100
+                elif countMax >= 4:
+                    score += 10000
+
+                if countMin == 2:
+                    score -= 10
+                elif countMin == 3:
+                    score -= 100
+                elif countMin >= 4:
+                    score -= 10000
+
+                r = r + 1
+                c = c + 1
+
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        for i in range(self.col - 1, -1, -1):
+            countMax = 0
+            countMin = 0
+
+            r = 0
+            c = i
+
+            while r < self.row and c < self.col:
+                if board[r][c] == self.AGENT:
+                    countMax += 1
+                    countMin = 0
+                elif board[r][c] == self.PLAYER:
+                    countMin += 1
+                    countMax = 0
+                else:
+                    countMin = 0
+                    countMax = 0
+
+                if countMax == 2:
+                    score += 10
+                elif countMax == 3:
+                    score += 100
+                elif countMax >= 4:
+                    score += 10000
+
+                if countMin == 2:
+                    score -= 10
+                elif countMin == 3:
+                    score -= 100
+                elif countMin >= 4:
+                    score -= 10000
+
+                r = r + 1
+                c = c - 1
+
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        # 0 0 0 0 0 0 0
+        for i in range(1, self.row):
+            countMax = 0
+            countMin = 0
+
+            r = i
+            c = self.col - 1
+
+            while r < self.row and c < self.col:
+                if board[r][c] == self.AGENT:
+                    countMax += 1
+                    countMin = 0
+                elif board[r][c] == self.PLAYER:
+                    countMin += 1
+                    countMax = 0
+                else:
+                    countMin = 0
+                    countMax = 0
+
+                if countMax == 2:
+                    score += 10
+                elif countMax == 3:
+                    score += 100
+                elif countMax >= 4:
+                    score += 10000
+
+                if countMin == 2:
+                    score -= 10
+                elif countMin == 3:
+                    score -= 100
+                elif countMin >= 4:
+                    score -= 10000
+
+                r = r + 1
+                c = c - 1
+
+        return score
