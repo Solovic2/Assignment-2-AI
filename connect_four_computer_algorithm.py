@@ -10,6 +10,9 @@ class helper:
         self.col = 7
         self.AGENT = 1
         self.PLAYER = -1
+        self.TWO = 10
+        self.THREE = 100
+        self.FOUR = 100000
 
     def print_board(self):
         print(self.board)
@@ -26,7 +29,7 @@ class helper:
 
     # check last empty cell in column
     def check_last_empty_cell(self, state, x):
-        for index in range(self.row-1, -1, -1):
+        for index in range(self.row - 1, -1, -1):
             if state[index][x] == 0:
                 return index
         return -1
@@ -35,39 +38,59 @@ class helper:
     def get_game_leaves(self, state, value):
         successors = []
         for index in range(self.col):
-            check_cell = self.check_last_empty_cell(state,index)
+            check_cell = self.check_last_empty_cell(state, index)
             if check_cell != -1:
                 possible_game = state.copy()
                 possible_game[check_cell][index] = value
                 successors.append(possible_game)
         return successors
 
-    def maximize(self,depth,state):
+    def maximize(self, depth, state, tree={}):
         successor = self.get_game_leaves(state, self.AGENT)
         if len(successor) == 0 or depth == 0:
-            return self.evaluate(state), state
+            value = self.evaluate(state)
+            if depth in tree:
+                tree[depth].append((state, value))
+            else:
+                tree[depth] = [(state, value)]
+
+            return value, state
         else:
+            if depth in tree:
+                tree[depth].append(state)
+            else:
+                tree[depth] = [state]
             max_score = -math.inf
             max_state = None
 
             for state in successor:
-                next_score, next_state = self.minimize(depth - 1, state)
+                next_score, next_state = self.minimize(depth - 1, state, tree)
                 if next_score > max_score:
                     max_score = next_score
                     max_state = state
 
         return max_score, max_state
 
-    def minimize(self, depth, state):
+    def minimize(self, depth, state, tree={}):
         successor = self.get_game_leaves(state, self.PLAYER)
         if len(successor) == 0 or depth == 0:
-            return self.evaluate(state), state
+            value = self.evaluate(state)
+            if depth in tree:
+                tree[depth].append((state, value))
+            else:
+                tree[depth] = [(state, value)]
+
+            return value, state
         else:
+            if depth in tree:
+                tree[depth].append(state)
+            else:
+                tree[depth] = [state]
             min_score = math.inf
             min_state = None
 
             for state in successor:
-                next_score, next_state = self.maximize(depth - 1, state)
+                next_score, next_state = self.maximize(depth - 1, state, tree)
                 if next_score < min_score:
                     min_score = next_score
                     min_state = state
@@ -75,16 +98,26 @@ class helper:
         return min_score, min_state
 
     # maximize with alpha-beta pruning
-    def maximize_alpha_beta_pruning(self, depth, state, alpha, beta):
+    def maximize_alpha_beta_pruning(self, depth, state, alpha, beta, tree={}):
         successor = self.get_game_leaves(state, self.AGENT)
         if len(successor) == 0 or depth == 0:
-            return self.evaluate(state), state
+            value = self.evaluate(state)
+            if depth in tree:
+                tree[depth].append((state, value))
+            else:
+                tree[depth] = [(state, value)]
+
+            return value, state
         else:
+            if depth in tree:
+                tree[depth].append(state)
+            else:
+                tree[depth] = [state]
             max_score = -math.inf
             max_state = None
 
             for state in successor:
-                next_score, next_state = self.minimize_alpha_beta_pruning(depth - 1, state, alpha, beta)
+                next_score, next_state = self.minimize_alpha_beta_pruning(depth - 1, state, alpha, beta,tree)
                 if next_score > max_score:
                     max_score = next_score
                     max_state = state
@@ -95,16 +128,26 @@ class helper:
         return max_score, max_state
 
     # minimize with alpha-beta pruning
-    def minimize_alpha_beta_pruning(self, depth, state, alpha, beta):
+    def minimize_alpha_beta_pruning(self, depth, state, alpha, beta, tree={}):
         successor = self.get_game_leaves(state, self.PLAYER)
         if len(successor) == 0 or depth == 0:
-            return self.evaluate(state), state
+            value = self.evaluate(state)
+            if depth in tree:
+                tree[depth].append((state, value))
+            else:
+                tree[depth] = [(state, value)]
+
+            return value, state
         else:
+            if depth in tree:
+                tree[depth].append(state)
+            else:
+                tree[depth] = [state]
             min_score = math.inf
             min_state = None
 
             for state in successor:
-                next_score, next_state = self.maximize_alpha_beta_pruning(depth - 1, state, alpha, beta)
+                next_score, next_state = self.maximize_alpha_beta_pruning(depth - 1, state, alpha, beta,tree)
                 if next_score < min_score:
                     min_score = next_score
                     min_state = state
@@ -134,18 +177,18 @@ class helper:
                     countMax = 0
 
                 if countMax == 2:
-                    score += 10
+                    score += self.TWO
                 elif countMax == 3:
-                    score += 100
+                    score += self.THREE
                 elif countMax >= 4:
-                    score += 10000
+                    score += self.FOUR
 
                 if countMin == 2:
-                    score -= 10
+                    score -= (self.TWO + 5)
                 elif countMin == 3:
-                    score -= 100
+                    score -= (self.THREE + 50)
                 elif countMin >= 4:
-                    score -= 10000
+                    score -= (self.FOUR + 50)
 
         for i in range(self.col):
             countMax = 0
@@ -164,18 +207,18 @@ class helper:
                     countMax = 0
 
                 if countMax == 2:
-                    score += 10
+                    score += self.TWO
                 elif countMax == 3:
-                    score += 100
+                    score += self.THREE
                 elif countMax >= 4:
-                    score += 10000
+                    score += self.FOUR
 
                 if countMin == 2:
-                    score -= 10
+                    score -= (self.TWO + 5)
                 elif countMin == 3:
-                    score -= 100
+                    score -= (self.THREE + 50)
                 elif countMin >= 4:
-                    score -= 10000
+                    score -= (self.FOUR + 50)
 
         # 0 0 0 0 0 0 0
         # 0 0 0 0 0 0 0
@@ -202,18 +245,18 @@ class helper:
                     countMax = 0
 
                 if countMax == 2:
-                    score += 10
+                    score += self.TWO
                 elif countMax == 3:
-                    score += 100
+                    score += self.THREE
                 elif countMax >= 4:
-                    score += 10000
+                    score += self.FOUR
 
                 if countMin == 2:
-                    score -= 10
+                    score -= (self.TWO + 5)
                 elif countMin == 3:
-                    score -= 100
+                    score -= (self.THREE + 50)
                 elif countMin >= 4:
-                    score -= 10000
+                    score -= (self.FOUR + 50)
 
                 r = r + 1
                 c = c + 1
@@ -243,18 +286,18 @@ class helper:
                     countMax = 0
 
                 if countMax == 2:
-                    score += 10
+                    score += self.TWO
                 elif countMax == 3:
-                    score += 100
+                    score += self.THREE
                 elif countMax >= 4:
-                    score += 10000
+                    score += self.FOUR
 
                 if countMin == 2:
-                    score -= 10
+                    score -= (self.TWO + 5)
                 elif countMin == 3:
-                    score -= 100
+                    score -= (self.THREE + 50)
                 elif countMin >= 4:
-                    score -= 10000
+                    score -= (self.FOUR + 50)
 
                 r = r + 1
                 c = c + 1
@@ -284,18 +327,18 @@ class helper:
                     countMax = 0
 
                 if countMax == 2:
-                    score += 10
+                    score += self.TWO
                 elif countMax == 3:
-                    score += 100
+                    score += self.THREE
                 elif countMax >= 4:
-                    score += 10000
+                    score += self.FOUR
 
                 if countMin == 2:
-                    score -= 10
+                    score -= (self.TWO + 5)
                 elif countMin == 3:
-                    score -= 100
+                    score -= (self.THREE + 50)
                 elif countMin >= 4:
-                    score -= 10000
+                    score -= (self.FOUR + 50)
 
                 r = r + 1
                 c = c - 1
@@ -325,18 +368,18 @@ class helper:
                     countMax = 0
 
                 if countMax == 2:
-                    score += 10
+                    score += self.TWO
                 elif countMax == 3:
-                    score += 100
+                    score += self.THREE
                 elif countMax >= 4:
-                    score += 10000
+                    score += self.FOUR
 
                 if countMin == 2:
-                    score -= 10
+                    score -= (self.TWO + 5)
                 elif countMin == 3:
-                    score -= 100
+                    score -= (self.THREE + 50)
                 elif countMin >= 4:
-                    score -= 10000
+                    score -= (self.FOUR + 50)
 
                 r = r + 1
                 c = c - 1

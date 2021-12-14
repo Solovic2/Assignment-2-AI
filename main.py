@@ -22,6 +22,40 @@ def draw_board(board):
     pygame.display.update()
 
 
+def win_status():
+    white = (255, 255, 255)
+    font = pygame.font.Font('freesansbold.ttf', 32)
+    who_wins = " DRAW ... "
+    if score > 0:
+        who_wins = "Game Over , Computer Beats you LOSER !!"
+    else:
+        who_wins = "Congratulation , You Beats This Machine  !!"
+
+    text = font.render(who_wins, True, (0, 0, 0))
+    text_rect = text.get_rect()
+
+    # set the center of the rectangular object.
+    text_rect.center = (350, 350)
+
+    # infinite loop
+    while True:
+
+        # Fill Screen With White Color
+        win.fill(white)
+        # Display Text
+        win.blit(text, text_rect)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                # deactivates the pygame library
+                pygame.quit()
+                # quit the program.
+                quit()
+
+            # Draws the surface object to the screen.
+            pygame.display.update()
+
+
 def move():
     pos = scale / 2
     while True:
@@ -59,26 +93,34 @@ if __name__ == '__main__':
 
     run = True
     turn = True
+    score = 0
     while run:
-        game.print_board()
         draw_board(game.board)
         score = game.evaluate(game.board)
         print(score)
 
         if turn:
-            # x = int(input(" place : "))
             x = move()
             print("X from GUI {}".format(x))
             y = game.check_last_empty_cell(game.board, x)
-            if y != -1 and x != -1:
+            if x == -1:
+                break
+            if y != -1:
                 game.update_board(x, y, game.PLAYER)
             else:
                 turn = not turn
         else:
-            score, next_state = game.maximize_alpha_beta_pruning(3, game.board, -math.inf, math.inf)
+            tree = {}
+            score, next_state = game.maximize_alpha_beta_pruning(2, game.board, -math.inf, math.inf, tree)
             game.board = next_state
+            print(tree)
+            count = 0
+            for i in range(len(tree)):
+                count += len(tree[i])
+            print("\n Number Of Nodes is : {} \n".format(count))
         turn = not turn
 
         if game.game_over():
             run = False
+    win_status()
     pygame.quit()
