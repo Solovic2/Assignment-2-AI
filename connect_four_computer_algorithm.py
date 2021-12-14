@@ -74,6 +74,46 @@ class helper:
 
         return min_score, min_state
 
+    # maximize with alpha-beta pruning
+    def maximize_alpha_beta_pruning(self, depth, state, alpha, beta):
+        successor = self.get_game_leaves(state, self.AGENT)
+        if len(successor) == 0 or depth == 0:
+            return self.evaluate(state), state
+        else:
+            max_score = -math.inf
+            max_state = None
+
+            for state in successor:
+                next_score, next_state = self.minimize_alpha_beta_pruning(depth - 1, state, alpha, beta)
+                if next_score > max_score:
+                    max_score = next_score
+                    max_state = state
+                if max_score >= beta:
+                    break
+                if max_score > alpha:
+                    alpha = max_score
+        return max_score, max_state
+
+    # minimize with alpha-beta pruning
+    def minimize_alpha_beta_pruning(self, depth, state, alpha, beta):
+        successor = self.get_game_leaves(state, self.PLAYER)
+        if len(successor) == 0 or depth == 0:
+            return self.evaluate(state), state
+        else:
+            min_score = math.inf
+            min_state = None
+
+            for state in successor:
+                next_score, next_state = self.maximize_alpha_beta_pruning(depth - 1, state, alpha, beta)
+                if next_score < min_score:
+                    min_score = next_score
+                    min_state = state
+                if min_score <= alpha:
+                    break
+                if min_score < beta:
+                    beta = min_score
+        return min_score, min_state
+
     def evaluate(self, board):
         score = 0
 
