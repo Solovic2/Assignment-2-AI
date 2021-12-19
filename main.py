@@ -2,7 +2,7 @@ import math
 
 import pygame
 
-from connect_four_computer_algorithm import helper
+from ConnectFourAlgorithm import helper
 
 
 def draw_board(board):
